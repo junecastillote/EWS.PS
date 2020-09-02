@@ -2,6 +2,7 @@ Function Get-EwsPsMailboxFolder {
     [CmdletBinding()]
     param (
         [parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
         $Token,
 
         [parameter(Mandatory)]
@@ -26,6 +27,7 @@ Function Get-EwsPsMailboxFolder {
     $Service.UseDefaultCredentials = $false
     $Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]::new($Token.AccessToken)
     $service.ImpersonatedUserId = New-Object Microsoft.Exchange.WebServices.Data.ImpersonatedUserId([Microsoft.Exchange.WebServices.Data.ConnectingIdType]::SmtpAddress, $MailboxAddress);
+    $service.HttpHeaders.Add('X-AnchorMailbox', $MailboxName)
 
     if ($MailboxType -eq 'Primary') {
         $ConnectToMailboxRootFolders = New-Object Microsoft.Exchange.WebServices.Data.FolderId([Microsoft.Exchange.Webservices.Data.WellKnownFolderName]::MsgFolderRoot, $MailboxAddress)
@@ -50,30 +52,33 @@ Function Get-EwsPsMailboxFolder {
 }
 
 Function Move-EwsPsMessageToFolder {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
-        [parameter(Mandatory)]
+        [parameter(Mandatory, ParameterSetName = 'All')]
+        [parameter(Mandatory, ParameterSetName = 'DateFilter')]
+        [ValidateNotNullOrEmpty()]
         $Token,
 
-        [parameter(Mandatory)]
+        [parameter(Mandatory, ParameterSetName = 'All')]
+        [parameter(Mandatory, ParameterSetName = 'DateFilter')]
         [ValidateNotNullOrEmpty()]
         [string]$MailboxAddress,
 
-        [Parameter(Mandatory)]
+        [parameter(Mandatory, ParameterSetName = 'All')]
+        [parameter(Mandatory, ParameterSetName = 'DateFilter')]
         [ValidateNotNullOrEmpty()]
-        [string]$SourceFolderID,
+        $SourceFolderID,
 
-        # [Parameter(Mandatory)]
-        # [ValidateSet('Primary','Archive')]
-        # [string]$SourceMailboxType,
+        [parameter(Mandatory, ParameterSetName = 'All')]
+        [parameter(Mandatory, ParameterSetName = 'DateFilter')]
+        [ValidateNotNullOrEmpty()]
+        $TargetFolderID,
 
-        # [Parameter(Mandatory)]
-        # [ValidateNotNullOrEmpty()]
-        # [string]$TargetFolderID,
+        [parameter(Mandatory, ParameterSetName = 'DateFilter')]
+        [datetime]$StartDate,
 
-        # [Parameter(Mandatory)]
-        # [ValidateSet('Primary','Archive')]
-        # [string]$TargetMailboxType,
+        [parameter(Mandatory, ParameterSetName = 'DateFilter')]
+        [datetime]$EndDate,
 
         [parameter()]
         [string]$EwsDLL = 'C:\Program Files\Microsoft\Exchange\Web Services\2.2\Microsoft.Exchange.WebServices.dll'
@@ -84,20 +89,39 @@ Function Move-EwsPsMessageToFolder {
     $Service.UseDefaultCredentials = $false
     $Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]::new($Token.AccessToken)
     $service.ImpersonatedUserId = New-Object Microsoft.Exchange.WebServices.Data.ImpersonatedUserId([Microsoft.Exchange.WebServices.Data.ConnectingIdType]::SmtpAddress, $MailboxAddress);
+    $service.HttpHeaders.Add('X-AnchorMailbox', $MailboxAddress)
 
-    if ($MailboxType -eq 'Primary') {
-        $ConnectToMailboxRootFolders = New-Object Microsoft.Exchange.WebServices.Data.FolderId([Microsoft.Exchange.Webservices.Data.WellKnownFolderName]::MsgFolderRoot, $MailboxAddress)
+    $ItemView = new-object -TypeName Microsoft.Exchange.WebServices.Data.ItemView -ArgumentList (1000)
+
+    if ($PSCmdlet.ParameterSetName -eq 'DateFilter') {
+        $SearchFilter = New-Object Microsoft.Exchange.WebServices.Data.SearchFilter+SearchFilterCollection([Microsoft.Exchange.WebServices.Data.LogicalOperator]::And)
+        $startDateFilter = New-Object Microsoft.Exchange.WebServices.Data.SearchFilter+IsGreaterThan([Microsoft.Exchange.WebServices.Data.ItemSchema]::DateTimeReceived, $StartDate)
+        $endDateFilter = New-Object Microsoft.Exchange.WebServices.Data.SearchFilter+IsLessThan([Microsoft.Exchange.WebServices.Data.ItemSchema]::DateTimeReceived, $EndDate)
+        $SearchFilter.Add($startDateFilter)
+        $SearchFilter.Add($endDateFilter)
     }
-    elseif ($MailboxType -eq 'Archive') {
-        $ConnectToMailboxRootFolders = New-Object Microsoft.Exchange.WebServices.Data.FolderId([Microsoft.Exchange.Webservices.Data.WellKnownFolderName]::ArchiveMsgFolderRoot, $MailboxAddress)
+
+    $messageCount = 1
+    do {
+        if ($PSCmdlet.ParameterSetName -eq 'DateFilter') {
+            $FindItemResults = $service.FindItems($SourceFolderID.Id, $SearchFilter, $ItemView)
+        }
+        else {
+            $FindItemResults = $service.FindItems($SourceFolderID.Id, $ItemView)
+        }
+
+        $i = 1
+        foreach ($Item in $FindItemResults.Items) {
+            $Message = [Microsoft.Exchange.WebServices.Data.EmailMessage]::Bind($service, $Item.Id)
+            $Message.Move($TargetFolderID.Id) > $null
+
+            Write-Progress -Activity "Moving messages from $($SourceFolderID.DisplayName) to $($TargetFolderID.DisplayName)" -Status "$i of $($FindItemResults.TotalCount)" -PercentComplete (($i / $FindItemResults.TotalCount) * 100)
+            $i++
+        }
+        $ItemView.offset += $FindItemResults.Items.Count
+    } while ($FindItemResults.MoreAvailable -eq $true)
+
+    if (($messageCount % 100) -gt 0) {
+        write-host ($messageCount - 1)
     }
-
-    $EWSParentFolder = [Microsoft.Exchange.WebServices.Data.Folder]::Bind($service, $ConnectToMailboxRootFolders)
-    $FolderView = New-Object Microsoft.Exchange.WebServices.Data.FolderView(100)
-    $FolderView.Traversal = [Microsoft.Exchange.WebServices.Data.FolderTraversal]::Deep
-
-    Write-Verbose "Checking if source folder ID exists [$SourceFolderID]"
-    $SearchFilter = New-Object Microsoft.Exchange.WebServices.Data.SearchFilter+IsEqualTo([Microsoft.Exchange.WebServices.Data.FolderSchema]::ID, $SourceFolderID)
-    $MailboxFolderList = $EWSParentFolder.FindFolders($SearchFilter, $FolderView)
-    return $MailboxFolderList
 }
