@@ -120,8 +120,4 @@ Function Move-EwsPsMessageToFolder {
         }
         $ItemView.offset += $FindItemResults.Items.Count
     } while ($FindItemResults.MoreAvailable -eq $true)
-
-    if (($messageCount % 100) -gt 0) {
-        write-host ($messageCount - 1)
-    }
 }

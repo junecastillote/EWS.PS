@@ -12,9 +12,12 @@ $msalParams = @{
 }
 $token = Get-MsalToken @msalParams
 
+Remove-MOdule Ews.Ps.Move.Email -ErrorAction SilentlyContinue
+Import-Module C:\GitHub\EWS.PS.Move.Email\Ews.Ps.Move.Email.psd1
+
 
 $mailbox = 'june@poshlab.ga'
-. .\src\functions.ps1
+#. .\src\functions.ps1
 # $pFolders = Get-EwsPsMailboxFolder -Token $token -MailboxAddress $mailbox -MailboxType Primary
 # $aFolders = Get-EwsPsMailboxFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive
 
@@ -22,7 +25,7 @@ $SourceFolderID = Get-EwsPsMailboxFolder -Token $token -MailboxAddress $mailbox 
 $TargetFolderID = Get-EwsPsMailboxFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive -FolderName Archive
 
 Move-EwsPsMessageToFolder -Token $token -MailboxAddress $mailbox -SourceFolderID $SourceFolderID -TargetFolderID $TargetFolderID -StartDate (Get-Date).AddDays(-3)
-Move-EwsPsMessageToFolder -Token $token -MailboxAddress $mailbox -SourceFolderID $TargetFolderID -TargetFolderID $SourceFolderID -StartDate (Get-Date).AddDays(-3) -EndDate (Get-Date)
+#Move-EwsPsMessageToFolder -Token $token -MailboxAddress $mailbox -SourceFolderID $TargetFolderID -TargetFolderID $SourceFolderID -StartDate (Get-Date).AddDays(-3) -EndDate (Get-Date)
 
 
 # $folderid = new-object Microsoft.Exchange.WebServices.Data.FolderId([Microsoft.Exchange.WebServices.Data.WellKnownFolderName]::Inbox,$mailbox)
