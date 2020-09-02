@@ -101,7 +101,6 @@ Function Move-EwsPsMessageToFolder {
         $SearchFilter.Add($endDateFilter)
     }
 
-    $messageCount = 1
     do {
         if ($PSCmdlet.ParameterSetName -eq 'DateFilter') {
             $FindItemResults = $service.FindItems($SourceFolderID.Id, $SearchFilter, $ItemView)
