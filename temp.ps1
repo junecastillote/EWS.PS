@@ -16,3 +16,7 @@ $mailbox = 'june@poshlab.ga'
 . .\src\functions.ps1
 $pFolders = Get-EwsPsMailboxFolder -Token $token -MailboxAddress $mailbox -MailboxType Primary
 $aFolders = Get-EwsPsMailboxFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive
+
+$SourceFolderID = 'AQMkADRmZTI3MWRlLWY2NTEtNDdlYS04MGE0LTNmODZhNzFhNTMzAGIALgAAAw+T9fhAm8pLhZSATLiuFvEBAEqUOJ1EAgdClXDW7Gfy3cMAAAIBDAAAAA=='
+
+Move-EwsPsMessageToFolder -Token $token -MailboxAddress $mailbox -SourceFolderID $SourceFolderID
