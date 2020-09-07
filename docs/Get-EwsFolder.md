@@ -5,21 +5,6 @@ This function uses EWS calls to do the following:
 - Search a folder from mailbox by folder display name (eg. `Inbox`, `Drafts`)
 - Get a folder from mailbox by folder ID (eg. `AQMkADRmZTI3MW..`)
 
-> Note: This function uses OAuth token to authenticate with Exchange Online. Basic authentication using username and password.
-
-## Requirements
-
-- A registered Azure AD app
-   - **API Name:** *Exchange*
-   - **API Permission Type:** *Application*
-   - **API Permission Name:** *full_access_as_app*
-
-      ![Azure Ad Api Permission](images/AzureAdApp-API-Permissions.png)<br><font size="1">A registered Azure AD App with full_access_as_app API permisson</font>
-
-- Windows PowerShell 5.1
-- [Exchange Web Services Managed API 2.2](https://www.microsoft.com/en-us/download/details.aspx?id=42951)
-- [MSAL.PS](https://www.powershellgallery.com/packages/MSAL.PS) Module must be installed on your computer. This will be used to get the access token from Office 365 using the `Get-MsalToken` cmdlet.
-
 ## Parameter Sets
 
 ```PowerShell
@@ -61,7 +46,7 @@ $pFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Pri
 $aFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive
 ```
 
-![Example 1: List All Folders In A Mailbox](images/Get-EwsFolder-Example01.png)<br><font size="1">List All Folders In A Mailbox</font>
+![Example 1: List All Folders In A Mailbox](images/Get-EwsFolder-Example01.png)<br>List All Folders In A Mailbox
 
 ### Example 2: Find A Folder Using Folder Name
 
@@ -85,7 +70,7 @@ $pFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Pri
 $aFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive -FolderName Inbox
 ```
 
-![Example 2: Find A Folder Using Folder Name](images/Get-EwsFolder-Example02.png)<br><font size="1">Find A Folder Using Folder Name</font>
+![Example 2: Find A Folder Using Folder Name](images/Get-EwsFolder-Example02.png)<br>Find A Folder Using Folder Name
 
 ### Example 3: Find A Folder Using Folder ID
 
@@ -111,4 +96,4 @@ $aFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Arc
 -FolderID 'AQMkADk5ADgzYzM3YS1lMDJkLTRlNmEtOWYwMS1mNTM2NGQ5MjUxZmUALgAAA68MAsXguOpHho7Am6tSZh8BAGKR9/4OEe5PsddW42ydLyEAAAIBSAAAAA=='
 ```
 
-![Example 3: Find A Folder Using Folder ID](images/Get-EwsFolder-Example03.png)<br><font size="1">Find A Folder Using Folder ID</font>
+![Example 3: Find A Folder Using Folder ID](images/Get-EwsFolder-Example03.png)<br>Find A Folder Using Folder ID
