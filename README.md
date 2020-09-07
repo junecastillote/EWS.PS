@@ -28,7 +28,7 @@ PowerShell function using EWS (OAuth2) to perform these operations against Excha
 
 ### Usage Examples
 
-- [Access Token Requirement](/docs/Get-EwsFolder.MD/#access-token-requirement)
+- [Access Token Requirement](docs/Get-EwsFolder.md#access-token-requirement)
 - [Example 1: List All Folders In A Mailbox](#example-1--list-all-folders-in-a-mailbox)
 - [Example 2: Find A Folder Using Folder Name](#example-2--find-a-folder-using-folder-name)
 - [Example 3: Find A Folder Using Folder ID](#example-3--find-a-folder-using-folder-id)
