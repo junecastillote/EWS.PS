@@ -42,15 +42,6 @@ $token = Get-MsalToken @msalParams
 ### Example 1: List All Folders In A Mailbox
 
 ```PowerShell
-# Get MSAL Token using CLIENT ID,  CLIENT SECRET, and TENANT ID
-$msalParams = @{
-    ClientId = 'CLIENT ID'
-    ClientSecret = (ConvertTo-SecureString 'CLIENT SECRET' -AsPlainText -Force)
-    TenantId = 'TENANT ID'
-    Scopes   = "https://outlook.office.com/.default"
-}
-$token = Get-MsalToken @msalParams
-
 # Mailbox SMTP Address of the user to impersonate
 $mailbox = 'june@poshlab.ga'
 
@@ -66,15 +57,6 @@ $aFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Arc
 ### Example 2: Find A Folder Using Folder Name
 
 ```PowerShell
-# Get MSAL Token using CLIENT ID,  CLIENT SECRET, and TENANT ID
-$msalParams = @{
-    ClientId = 'CLIENT ID'
-    ClientSecret = (ConvertTo-SecureString 'CLIENT SECRET' -AsPlainText -Force)
-    TenantId = 'TENANT ID'
-    Scopes   = "https://outlook.office.com/.default"
-}
-$token = Get-MsalToken @msalParams
-
 # Mailbox SMTP Address of the user to impersonate
 $mailbox = 'june@poshlab.ga'
 
@@ -90,15 +72,6 @@ $aFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Arc
 ### Example 3: Find A Folder Using Folder ID
 
 ```PowerShell
-# Get MSAL Token using CLIENT ID,  CLIENT SECRET, and TENANT ID
-$msalParams = @{
-    ClientId = 'CLIENT ID'
-    ClientSecret = (ConvertTo-SecureString 'CLIENT SECRET' -AsPlainText -Force)
-    TenantId = 'TENANT ID'
-    Scopes   = "https://outlook.office.com/.default"
-}
-$token = Get-MsalToken @msalParams
-
 # Mailbox SMTP Address of the user to impersonate
 $mailbox = 'june@poshlab.ga'
 
