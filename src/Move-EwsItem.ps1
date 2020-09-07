@@ -1,4 +1,4 @@
-Function Move-EwsPsMessageToFolder {
+Function Move-EwsItem {
     [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
         [parameter(Mandatory, ParameterSetName = 'All')]
