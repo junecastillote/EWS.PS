@@ -131,26 +131,9 @@ $TargetFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxTyp
 
 # Move messages from $SourceFolder to $TargetFolder
 Move-EwsItem -Token $token -MailboxAddress $mailbox -SourceFolder $SourceFolder -TargetFolder $TargetFolder -TestMode $false
-
 ```
 
-### Example 2: Move Items Received Within Specified Dates
-
-This example moves items that were received in the last 3 days
-
-```PowerShell
-# Mailbox SMTP Address of the user to impersonate
-$mailbox = 'june@poshlab.ga'
-
-# Get the source folder object
-$SourceFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Primary -FolderName Inbox
-$TargetFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive -FolderName Inbox
-
-# Move messages from $SourceFolder to $TargetFolder
-Move-EwsItem -Token $token -MailboxAddress $mailbox -SourceFolder $SourceFolder -TargetFolder $TargetFolder -StartDate (Get-Date).AddDays(-3) -EndDate (Get-Date)
-```
-
-### Example 2: Move Items Received Within Specified Dates
+### Example 2: Move Items Received Between Specified Dates
 
 This example moves items that were received in the last 3 days
 

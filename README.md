@@ -26,9 +26,29 @@ PowerShell function using EWS (OAuth2) to perform these operations against Excha
 - [Exchange Web Services Managed API 2.2](https://www.microsoft.com/en-us/download/details.aspx?id=42951)
 - [MSAL.PS](https://www.powershellgallery.com/packages/MSAL.PS) Module must be installed on your computer. This will be used to get the access token from Office 365 using the `Get-MsalToken` cmdlet.
 
+## How to Install This Module
+
+- [Download the module](https://github.com/junecastillote/EWS.PS/archive/master.zip) and extract the ZIP file on your computer.
+
+## Access Token Requirement
+
+Make sure to acquire an access token first. Use the `Get-MsalToken` cmdlet.
+
+```PowerShell
+# Get MSAL Token using CLIENT ID,  CLIENT SECRET, and TENANT ID
+$msalParams = @{
+    ClientId = 'CLIENT ID'
+    ClientSecret = (ConvertTo-SecureString 'CLIENT SECRET' -AsPlainText -Force)
+    TenantId = 'TENANT ID'
+    Scopes   = "https://outlook.office.com/.default"
+}
+$token = Get-MsalToken @msalParams
+```
+
 ### Usage Examples
 
-- [Access Token Requirement](docs/Get-EwsFolder.md#access-token-requirement)
-- [Example 1: List All Folders In A Mailbox](#example-1--list-all-folders-in-a-mailbox)
-- [Example 2: Find A Folder Using Folder Name](#example-2--find-a-folder-using-folder-name)
-- [Example 3: Find A Folder Using Folder ID](#example-3--find-a-folder-using-folder-id)
+- [List All Folders In A Mailbox](docs/Get-EwsFolder.md#example-1--list-all-folders-in-a-mailbox)
+- [Find A Folder Using Folder Name](docs/Get-EwsFolder.md#example-2--find-a-folder-using-folder-name)
+- [Find A Folder Using Folder ID](docs/Get-EwsFolder.md#example-3--find-a-folder-using-folder-id)
+- [Move All Items from One Folder to Another](docs/Move-EwsItem.md#example-1--move-all-items-from-one-folder-to-another)
+- [Move Items Received Between Specified Dates](docs/Move-EwsItem.md#example-2--move-items-received-within-specified-dates)

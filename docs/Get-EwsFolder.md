@@ -114,7 +114,7 @@ $pFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Pri
 $aFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive
 ```
 
-![Example 1: List All Folders In A Mailbox](/docs/images/Get-EwsFolder-Example01.png)<br>List All Folders In A Mailbox
+![Example 1: List All Folders In A Mailbox](images/Get-EwsFolder-Example01.png)<br>List All Folders In A Mailbox
 
 ### Example 2: Find A Folder Using Folder Name
 
@@ -129,7 +129,7 @@ $pFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Pri
 $aFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive -FolderName Inbox
 ```
 
-![Example 2: Find A Folder Using Folder Name](/docs/images/Get-EwsFolder-Example02.png)<br>Find A Folder Using Folder Name
+![Example 2: Find A Folder Using Folder Name](images/Get-EwsFolder-Example02.png)<br>Find A Folder Using Folder Name
 
 ### Example 3: Find A Folder Using Folder ID
 
@@ -146,4 +146,4 @@ $aFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Arc
 -FolderID 'AQMkADk5ADgzYzM3YS1lMDJkLTRlNmEtOWYwMS1mNTM2NGQ5MjUxZmUALgAAA68MAsXguOpHho7Am6tSZh8BAGKR9/4OEe5PsddW42ydLyEAAAIBSAAAAA=='
 ```
 
-![Example 3: Find A Folder Using Folder ID](/docs/images/Get-EwsFolder-Example03.png)<br>Find A Folder Using Folder ID
+![Example 3: Find A Folder Using Folder ID](images/Get-EwsFolder-Example03.png)<br>Find A Folder Using Folder ID
