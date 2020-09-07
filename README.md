@@ -1,7 +1,18 @@
 # EWS.PS
 PowerShell function using EWS (OAuth2) to perform these operations against Exchange Online Mailboxes.
 
+## Contents
+
+- [Functions](#functions)
+- [Requirements](#requirements)
+- [How To Install The Module](#how-to-install-the-module)
+- [How To Uninstall The Module](#how-to-uninstall-the-module)
+- [OAuth Access Token Requirement](#oauth-access-token-requirement)
+- [Usage Examples](#usage-examples)
+
 ## Functions
+
+So far there are two functions included in this module.
 
 - [`Get-EwsFolder`](docs/Get-EwsFolder.md)
   * List ALL folders from a mailbox
@@ -26,14 +37,22 @@ PowerShell function using EWS (OAuth2) to perform these operations against Excha
 - [Exchange Web Services Managed API 2.2](https://www.microsoft.com/en-us/download/details.aspx?id=42951)
 - [MSAL.PS](https://www.powershellgallery.com/packages/MSAL.PS) Module must be installed on your computer. This will be used to get the access token from Office 365 using the `Get-MsalToken` cmdlet.
 
-## How to Install This Module
+## How To Install The Module
 
 - [Download the module](https://github.com/junecastillote/EWS.PS/archive/master.zip) and extract the ZIP file on your computer.
+![Extract the module](docs/images/extract_module.png)<br>Extract the module files on your computer
 
 - Open PowerShell as Administrator, change the working directory to the location of the module.
 - Run the script `.\install.ps1 -ModulePath 'C:\Program Files\WindowsPowerShell\Modules' -Verbose`
+![Install the module](docs/images/install_module.png)<br>Install the module
 
-## Access Token Requirement
+## How To Uninstall The Module
+
+- Open PowerShell as Administrator, change the working directory to the location of the module.
+- Run the script `.\uninstall.ps1 -Verbose`
+![Uninstall the module](docs/images/uninstall_module.png)<br>Uninstall the module
+
+## OAuth Access Token Requirement
 
 Make sure to acquire an access token first. Use the `Get-MsalToken` cmdlet.
 
@@ -48,7 +67,7 @@ $msalParams = @{
 $token = Get-MsalToken @msalParams
 ```
 
-### Usage Examples
+## Usage Examples
 
 - [List All Folders In A Mailbox](docs/Get-EwsFolder.md#example-1--list-all-folders-in-a-mailbox)
 - [Find A Folder Using Folder Name](docs/Get-EwsFolder.md#example-2--find-a-folder-using-folder-name)
