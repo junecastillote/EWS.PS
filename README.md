@@ -30,6 +30,9 @@ PowerShell function using EWS (OAuth2) to perform these operations against Excha
 
 - [Download the module](https://github.com/junecastillote/EWS.PS/archive/master.zip) and extract the ZIP file on your computer.
 
+- Open PowerShell as Administrator, change the working directory to the location of the module.
+- Run the script `.\install.ps1 -ModulePath 'C:\Program Files\WindowsPowerShell\Modules' -Verbose`
+
 ## Access Token Requirement
 
 Make sure to acquire an access token first. Use the `Get-MsalToken` cmdlet.
