@@ -43,6 +43,8 @@ Function Get-EwsFolder {
 
     ## Exchange Online EWS URL
     $Service.Url = 'https://outlook.office365.com/EWS/Exchange.asmx'
+
+    ## EWS Authentication
     $Service.UseDefaultCredentials = $false
     $Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]::new($Token.AccessToken)
 

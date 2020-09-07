@@ -22,17 +22,17 @@ Import-Module C:\GitHub\EWS.PS.Move.Email\Ews.Ps.Move.Email.psd1
 
 
 $mailbox = 'june@poshlab.ga'
-$pFolders = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Primary -Folder
-$aFolders = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive
+# $pFolders = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Primary -Folder
+# $aFolders = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive
 
 # $pFolders = Get-EwsPsMailboxFolder -Token $token -MailboxAddress $mailbox -MailboxType Primary
 # $aFolders = Get-EwsPsMailboxFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive
 
-$SourceFolderID = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Primary -FolderName Inbox
-$TargetFolderID = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive -FolderName Archive
+$SourceFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Primary -FolderName Inbox
+$TargetFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive -FolderName Archive
 
-Move-EwsItem -Token $token -MailboxAddress $mailbox -SourceFolderID $SourceFolderID -TargetFolderID $TargetFolderID -StartDate (Get-Date).AddDays(-3)
-#Move-EwsItem -Token $token -MailboxAddress $mailbox -SourceFolderID $TargetFolderID -TargetFolderID $SourceFolderID -StartDate (Get-Date).AddDays(-3) -EndDate (Get-Date)
+Move-EwsItem -Token $token -MailboxAddress $mailbox -SourceFolder $SourceFolder -TargetFolder $TargetFolder -StartDate (Get-Date).AddDays(-3)
+Move-EwsItem -Token $token -MailboxAddress $mailbox -SourceFolder $SourceFolder -TargetFolder $TargetFolder -StartDate (Get-Date).AddDays(-3) -EndDate (Get-Date)
 
 
 # $folderid = new-object Microsoft.Exchange.WebServices.Data.FolderId([Microsoft.Exchange.WebServices.Data.WellKnownFolderName]::Inbox,$mailbox)
