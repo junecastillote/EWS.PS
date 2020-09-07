@@ -17,8 +17,8 @@ $msalParams = @{
 }
 $token = Get-MsalToken @msalParams
 
-Remove-Module Ews.Ps.Move.Email -ErrorAction SilentlyContinue
-Import-Module C:\GitHub\EWS.PS.Move.Email\Ews.Ps.Move.Email.psd1
+Remove-Module Ews.Ps -ErrorAction SilentlyContinue
+Import-Module C:\GitHub\EWS.PS\Ews.Ps.psd1
 
 
 $mailbox = 'june@poshlab.ga'
@@ -29,9 +29,9 @@ $mailbox = 'june@poshlab.ga'
 # $aFolders = Get-EwsPsMailboxFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive
 
 $SourceFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Primary -FolderName Inbox
-$TargetFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive -FolderName Archive
+$TargetFolder = Get-EwsFolder -Token $token -MailboxAddress $mailbox -MailboxType Archive -FolderName Inbox
 
-Move-EwsItem -Token $token -MailboxAddress $mailbox -SourceFolder $SourceFolder -TargetFolder $TargetFolder -StartDate (Get-Date).AddDays(-3)
+#Move-EwsItem -Token $token -MailboxAddress $mailbox -SourceFolder $SourceFolder -TargetFolder $TargetFolder -StartDate (Get-Date).AddDays(-3)
 Move-EwsItem -Token $token -MailboxAddress $mailbox -SourceFolder $SourceFolder -TargetFolder $TargetFolder -StartDate (Get-Date).AddDays(-3) -EndDate (Get-Date)
 
 

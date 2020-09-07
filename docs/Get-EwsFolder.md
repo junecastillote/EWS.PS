@@ -24,6 +24,21 @@ Get-EwsFolder -Token <AuthenticationResult> -MailboxAddress <string> -MailboxTyp
 
 ## Usage Examples
 
+### Access Token Requirement
+
+Make sure to acquire an access token first. Use the `Get-MsalToken` cmdlet.
+
+```PowerShell
+# Get MSAL Token using CLIENT ID,  CLIENT SECRET, and TENANT ID
+$msalParams = @{
+    ClientId = 'CLIENT ID'
+    ClientSecret = (ConvertTo-SecureString 'CLIENT SECRET' -AsPlainText -Force)
+    TenantId = 'TENANT ID'
+    Scopes   = "https://outlook.office.com/.default"
+}
+$token = Get-MsalToken @msalParams
+```
+
 ### Example 1: List All Folders In A Mailbox
 
 ```PowerShell

@@ -73,25 +73,25 @@ Function Move-EwsItem {
 
     do {
         if ($PSCmdlet.ParameterSetName -eq 'DateFilter') {
-            $FindItemResults = $service.FindItems($SourceFolderID.Id, $SearchFilter, $ItemView)
+            $FindItemResults = $service.FindItems($SourceFolder.Id, $SearchFilter, $ItemView)
         }
         else {
-            $FindItemResults = $service.FindItems($SourceFolderID.Id, $ItemView)
+            $FindItemResults = $service.FindItems($SourceFolder.Id, $ItemView)
         }
 
         $i = 1
         foreach ($Item in $FindItemResults.Items) {
             if ($TestMode -eq $true) {
-                Write-Progress -Activity "[LIST ONLY]] $($SourceFolderID.DisplayName) to $($TargetFolderID.DisplayName)" -Status "$i of $($FindItemResults.TotalCount)" -PercentComplete (($i / $FindItemResults.TotalCount) * 100)
+                Write-Progress -Activity "[LIST ONLY]] $($SourceFolder.DisplayName) to $($TargetFolder.DisplayName)" -Status "$i of $($FindItemResults.TotalCount)" -PercentComplete (($i / $FindItemResults.TotalCount) * 100)
                 $Item | Select-Object DateTimeReceived,Sender,Subject
             }
             elseif ($TestMode -eq $false) {
                 $Message = [Microsoft.Exchange.WebServices.Data.EmailMessage]::Bind($service, $Item.Id)
-                $Message.Move($TargetFolderID.Id) > $null
-                Write-Progress -Activity "Moving messages from $($SourceFolderID.DisplayName) to $($TargetFolderID.DisplayName)" -Status "$i of $($FindItemResults.TotalCount)" -PercentComplete (($i / $FindItemResults.TotalCount) * 100)
+                $Message.Move($TargetFolder.Id) > $null
+                Write-Progress -Activity "Moving messages from $($SourceFolder.DisplayName) to $($TargetFolder.DisplayName)" -Status "$i of $($FindItemResults.TotalCount)" -PercentComplete (($i / $FindItemResults.TotalCount) * 100)
             }
 
-            Write-Progress -Activity "Moving messages from $($SourceFolderID.DisplayName) to $($TargetFolderID.DisplayName)" -Status "$i of $($FindItemResults.TotalCount)" -PercentComplete (($i / $FindItemResults.TotalCount) * 100)
+            Write-Progress -Activity "Moving messages from $($SourceFolder.DisplayName) to $($TargetFolder.DisplayName)" -Status "$i of $($FindItemResults.TotalCount)" -PercentComplete (($i / $FindItemResults.TotalCount) * 100)
             $i++
         }
         $ItemView.offset += $FindItemResults.Items.Count
