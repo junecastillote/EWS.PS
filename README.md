@@ -1,7 +1,7 @@
 # EWS.PS
 PowerShell function using EWS (OAuth2) to perform these operations against Exchange Online Mailboxes.
 
-## Contents
+## Table of Contents
 
 - [Functions](#functions)
 - [Requirements](#requirements)
@@ -68,6 +68,8 @@ $msalParams = @{
 }
 $token = Get-MsalToken @msalParams
 ```
+
+> *Visit the [MSAL.PS GitHub](https://github.com/AzureAD/MSAL.PS) page to learn more about using MSAL.PS module to acquire OAuth access tokens.*
 
 ## Usage Examples
 
