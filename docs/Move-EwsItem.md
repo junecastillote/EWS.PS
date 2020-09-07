@@ -4,20 +4,7 @@ This function uses EWS calls to do the following:
 - Move all mailbox items from one folder to another
 - Move mailbox items between dates from one folder to another
 
-## Contents
-
-- [Parameter Sets](#parameter-sets)
-- [Parameters](#parameters)
-- [Usage Examples](#usage-examples)
-  * [Access Token Requirement](#access-token-requirement)
-  * [Example 1: Move All Items from One Folder to Another](#example-1--move-all-items-from-one-folder-to-another)
-  * [Example 2: Move Items Received Within Specified Dates](#example-2--move-items-received-within-specified-dates)
-  * [Example 2: Move Items Received Within Specified Dates](#example-2--move-items-received-within-specified-dates-1)
-
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
-
-## Parameter Sets
+## Syntax
 
 ```PowerShell
 Move-EwsItem -Token <AuthenticationResult> -MailboxAddress <string> -SourceFolder <Object> -TargetFolder <Object> [-TestMode <bool>] [<CommonParameters>]
