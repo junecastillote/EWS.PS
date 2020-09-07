@@ -40,11 +40,13 @@ So far there are two functions included in this module.
 ## How To Install The Module
 
 - [Download the module](https://github.com/junecastillote/EWS.PS/archive/master.zip) and extract the ZIP file on your computer.
-![Extract the module](docs/images/extract_module.png)<br>Extract the module files on your computer
+
+  ![Extract the module](docs/images/extract_module.png)<br>Extract the module files on your computer
 
 - Open PowerShell as Administrator, change the working directory to the location of the module.
 - Run the script `.\install.ps1 -ModulePath 'C:\Program Files\WindowsPowerShell\Modules' -Verbose`
-![Install the module](docs/images/install_module.png)<br>Install the module
+
+  ![Install the module](docs/images/install_module.png)<br>Install the module
 
 ## How To Uninstall The Module
 
