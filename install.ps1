@@ -20,8 +20,6 @@ else {
     Return $null
 }
 
-
-
 if (!(Test-Path $ModulePath)) {
     New-Item -Path $ModulePath -ItemType Directory -Force | Out-Null
 }

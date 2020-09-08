@@ -68,7 +68,7 @@ Function Get-EwsFolder {
     $EWSParentFolder = [Microsoft.Exchange.WebServices.Data.Folder]::Bind($service, $ConnectToMailboxRootFolders)
 
     ## Create the FolderView
-    $FolderView = New-Object Microsoft.Exchange.WebServices.Data.FolderView(100)
+    $FolderView = New-Object Microsoft.Exchange.WebServices.Data.FolderView(1000)
     $FolderView.Traversal = [Microsoft.Exchange.WebServices.Data.FolderTraversal]::Deep
 
     ## If -FolderName is specified, look for the said folder using its DisplayName
