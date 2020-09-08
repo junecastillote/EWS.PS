@@ -30,7 +30,7 @@ The Token parameter specifies the OAuth Access Token acquired from the Exchange 
 
 |   |   |
 |---|---|
-| Type: | Microsoft.Identity.Client.AuthenticationResult |
+| Type: | Microsoft.Identity.Client.AuthenticationResult,<br>Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationResult |
 | Position: | Named |
 | Default value : | None |
 | Accept pipeline input: | False |

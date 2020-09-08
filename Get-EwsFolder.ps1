@@ -5,7 +5,7 @@ Function Get-EwsFolder {
         [parameter(Mandatory,ParameterSetName='byFolderName')]
         [parameter(Mandatory,ParameterSetName='byFolderID')]
         [ValidateNotNullOrEmpty()]
-        $Token,
+        [Microsoft.Identity.Client.AuthenticationResult]$Token,
 
         [parameter(Mandatory,ParameterSetName='Default')]
         [parameter(Mandatory,ParameterSetName='byFolderName')]

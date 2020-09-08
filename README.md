@@ -35,7 +35,7 @@ So far there are two functions included in this module.
 
 - Windows PowerShell 5.1
 - [Exchange Web Services Managed API 2.2](https://www.microsoft.com/en-us/download/details.aspx?id=42951)
-- [MSAL.PS](https://www.powershellgallery.com/packages/MSAL.PS) Module must be installed on your computer. This will be used to get the access token from Office 365 using the `Get-MsalToken` cmdlet.
+- For getting access tokens, you can have either [MSAL.PS](https://www.powershellgallery.com/packages/MSAL.PS) or [ADAL.PS](https://www.powershellgallery.com/packages/ADAL.PS)
 
 ## How To Install The Module
 
@@ -56,7 +56,9 @@ So far there are two functions included in this module.
 
 ## OAuth Access Token Requirement
 
-Make sure to acquire an access token first. Use the `Get-MsalToken` cmdlet.
+Make sure to acquire an access token first. Use the `Get-MsalToken` cmdlet or `Get-AdalToken`.
+
+### Get Access Token Using MSAL.PS
 
 ```PowerShell
 # Get MSAL Token using CLIENT ID,  CLIENT SECRET, and TENANT ID
@@ -65,6 +67,19 @@ $msalParams = @{
     ClientSecret = (ConvertTo-SecureString 'CLIENT SECRET' -AsPlainText -Force)
     TenantId = 'TENANT ID'
     Scopes   = "https://outlook.office.com/.default"
+}
+$token = Get-MsalToken @msalParams
+```
+
+### Get Access Token Using ADAL.PS
+
+```PowerShell
+# Get MSAL Token using CLIENT ID,  CLIENT SECRET, and TENANT ID
+$msalParams = @{
+    ClientId = 'CLIENT ID'
+    ClientSecret = (ConvertTo-SecureString 'CLIENT SECRET' -AsPlainText -Force)
+    TenantId = 'TENANT ID'
+    Resource   = "https://outlook.office.com/"
 }
 $token = Get-MsalToken @msalParams
 ```
