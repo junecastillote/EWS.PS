@@ -46,7 +46,7 @@ Function Get-EwsFolder {
 
     ## EWS Authentication
     $Service.UseDefaultCredentials = $false
-    $Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]::new($Token.AccessToken)
+    $Service.Credentials = New-Object Microsoft.Exchange.WebServices.Data.OAuthCredentials -ArgumentList ($Token.AccessToken)
 
     ## Who are we impersonating?
     $service.ImpersonatedUserId = New-Object Microsoft.Exchange.WebServices.Data.ImpersonatedUserId([Microsoft.Exchange.WebServices.Data.ConnectingIdType]::SmtpAddress, $MailboxAddress);

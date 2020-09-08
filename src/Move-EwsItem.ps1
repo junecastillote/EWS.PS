@@ -4,7 +4,7 @@ Function Move-EwsItem {
         [parameter(Mandatory, ParameterSetName = 'All')]
         [parameter(Mandatory, ParameterSetName = 'DateFilter')]
         [ValidateNotNullOrEmpty()]
-        [Microsoft.Identity.Client.AuthenticationResult]$Token,
+        $Token,
 
         [parameter(Mandatory, ParameterSetName = 'All')]
         [parameter(Mandatory, ParameterSetName = 'DateFilter')]
@@ -51,7 +51,7 @@ Function Move-EwsItem {
 
     ## EWS Authentication
     $Service.UseDefaultCredentials = $false
-    $Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]::new($Token.AccessToken)
+    $Service.Credentials = New-Object Microsoft.Exchange.WebServices.Data.OAuthCredentials -ArgumentList ($Token.AccessToken)
 
     ## Who are we impersonating?
     $service.ImpersonatedUserId = New-Object Microsoft.Exchange.WebServices.Data.ImpersonatedUserId([Microsoft.Exchange.WebServices.Data.ConnectingIdType]::SmtpAddress, $MailboxAddress);
