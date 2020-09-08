@@ -90,8 +90,6 @@ Function Move-EwsItem {
                 $Message.Move($TargetFolder.Id) > $null
                 Write-Progress -Activity "Moving messages from $($SourceFolder.DisplayName) to $($TargetFolder.DisplayName)" -Status "$i of $($FindItemResults.TotalCount)" -PercentComplete (($i / $FindItemResults.TotalCount) * 100)
             }
-
-            Write-Progress -Activity "Moving messages from $($SourceFolder.DisplayName) to $($TargetFolder.DisplayName)" -Status "$i of $($FindItemResults.TotalCount)" -PercentComplete (($i / $FindItemResults.TotalCount) * 100)
             $i++
         }
         $ItemView.offset += $FindItemResults.Items.Count
