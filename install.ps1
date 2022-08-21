@@ -24,9 +24,13 @@ if (!(Test-Path $ModulePath)) {
     New-Item -Path $ModulePath -ItemType Directory -Force | Out-Null
 }
 
-Copy-Item -Path $PSScriptRoot\*.psd1,$PSScriptRoot\*.psm1 -Destination $ModulePath -Force -Confirm:$false -Verbose
+Copy-Item -Path $PSScriptRoot\*.psd1, $PSScriptRoot\*.psm1 -Destination $ModulePath -Force -Confirm:$false
 #Copy-Item -Path $PSScriptRoot\*.psm1 -Destination $ModulePath -Force -Confirm:$false
-Copy-Item -Path $PSScriptRoot\src\* -Destination (New-Item -ItemType Directory $ModulePath\src -Force).FullName -Force -Confirm:$false -Verbose
+Copy-Item -Path $PSScriptRoot\src\* -Destination (New-Item -ItemType Directory $ModulePath\src -Force).FullName -Force -Confirm:$false
+Copy-Item -Path $PSScriptRoot\dll\* -Destination (New-Item -ItemType Directory $ModulePath\dll -Force).FullName -Force -Confirm:$false
 
 Remove-Module ($Moduleinfo.Name) -ErrorAction SilentlyContinue
 Import-Module ($Moduleinfo.Name)
+
+$ModulePath = (Get-Module -Name ($Moduleinfo.Name.ToString())).ModuleBase.ToString()
+$ModulePath = $ModulePath -replace ($ModulePath.Split('\\')[-1], $null)
