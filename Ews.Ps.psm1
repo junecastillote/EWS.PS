@@ -10,6 +10,6 @@ $EwsDLL = "$($PSScriptRoot)\dll\Microsoft.Exchange.WebServices.dll"
 Import-Module -Name $EwsDLL -ErrorAction Stop -Force
 
 
-Get-ChildItem "$($PSScriptRoot)\src\*.ps1" | ForEach-Object {
+Get-ChildItem "$($PSScriptRoot)\source\public\*.ps1" | ForEach-Object {
     . "$($_.FullName)"
 }
