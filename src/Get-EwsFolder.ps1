@@ -28,16 +28,6 @@ Function Get-EwsFolder {
         [string]$FolderID
     )
 
-    ## Check registry if EWS Managed API is installed
-    $EwsDLL = (($(Get-ItemProperty -ErrorAction SilentlyContinue -Path Registry::$(Get-ChildItem -ErrorAction SilentlyContinue -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Exchange\Web Services' | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty Name)).'Install Directory') + "Microsoft.Exchange.WebServices.dll")
-    if (!($EwsDLL) -or !(Test-Path $EwsDLL)) {
-        Write-Error "The EWS Managed API is not found. Go to https://www.microsoft.com/en-us/download/details.aspx?id=42951 to download and install."
-        Return $null
-    }
-
-    ## Import the EWS Managed API Module
-    Import-Module -Name $EwsDLL -ErrorAction Stop
-
     ## Create the EWS Object
     $Service = New-Object Microsoft.Exchange.WebServices.Data.ExchangeService -ArgumentList 'Exchange2013_SP1'
 
