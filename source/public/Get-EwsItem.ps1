@@ -1,4 +1,4 @@
-function Move-EwsItem {
+function Get-EwsItem {
     [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
         [parameter(Mandatory, ParameterSetName = 'All')]
@@ -9,22 +9,13 @@ function Move-EwsItem {
         [parameter(Mandatory, ParameterSetName = 'All')]
         [parameter(Mandatory, ParameterSetName = 'DateFilter')]
         [ValidateNotNullOrEmpty()]
-        $SourceFolder,
-
-        [parameter(Mandatory, ParameterSetName = 'All')]
-        [parameter(Mandatory, ParameterSetName = 'DateFilter')]
-        [ValidateNotNullOrEmpty()]
-        $TargetFolder,
+        $Folder,
 
         [parameter(Mandatory, ParameterSetName = 'DateFilter')]
         [datetime]$StartDate,
 
         [parameter(Mandatory, ParameterSetName = 'DateFilter')]
-        [datetime]$EndDate,
-
-        [parameter(ParameterSetName = 'All')]
-        [parameter(ParameterSetName = 'DateFilter')]
-        [boolean]$TestMode = $true
+        [datetime]$EndDate
 
     )
 
@@ -36,6 +27,7 @@ function Move-EwsItem {
         Write-Error "EWS is not connected. Run the Connect-Ews command first."
         return $null
     }
+
 
     ## Create the EWS Object
     $Service = New-Object Microsoft.Exchange.WebServices.Data.ExchangeService -ArgumentList 'Exchange2013_SP1'
@@ -56,7 +48,7 @@ function Move-EwsItem {
 
     $ItemView = New-Object -TypeName Microsoft.Exchange.WebServices.Data.ItemView -ArgumentList (1000)
 
-    $global:ewsItems = @()
+    $result = [System.Collections.Generic.List[System.Object]]@()
 
     # If StartDate and EndDate are used, create the Search Filter collection
     if ($PSCmdlet.ParameterSetName -eq 'DateFilter') {
@@ -69,30 +61,18 @@ function Move-EwsItem {
 
     do {
         if ($PSCmdlet.ParameterSetName -eq 'DateFilter') {
-            $FindItemResults = $service.FindItems($SourceFolder.Id, $SearchFilter, $ItemView)
+            $FindItemResults = $service.FindItems($Folder.Id, $SearchFilter, $ItemView)
         }
         else {
-            $FindItemResults = $service.FindItems($SourceFolder.Id, $ItemView)
+            $FindItemResults = $service.FindItems($Folder.Id, $ItemView)
         }
 
-
-        $i = 1
-        foreach ($Item in $FindItemResults.Items) {
-            if ($TestMode -eq $true) {
-                Write-Progress -Activity "[LIST ONLY]] $($SourceFolder.DisplayName) to $($TargetFolder.DisplayName)" -Status "$i of $($FindItemResults.TotalCount)" -PercentComplete (($i / $FindItemResults.TotalCount) * 100)
-                $global:ewsItems += $Item
-            }
-            elseif ($TestMode -eq $false) {
-                $Message = [Microsoft.Exchange.WebServices.Data.EmailMessage]::Bind($service, $Item.Id)
-                $Message.Move($TargetFolder.Id) > $null
-                Write-Progress -Activity "Moving messages from $($SourceFolder.DisplayName) to $($TargetFolder.DisplayName)" -Status "$i of $($FindItemResults.TotalCount)" -PercentComplete (($i / $FindItemResults.TotalCount) * 100)
-            }
-            $i++
+        if ($FindItemResults) {
+            $result.AddRange($FindItemResults)
         }
+
         $ItemView.offset += $FindItemResults.Items.Count
     } while ($FindItemResults.MoreAvailable -eq $true)
-    Write-Progress -Completed
-    if ($TestMode -eq $true) {
-        "Test mode completed. The list of items is stored in '`$ewsItems'"
-    }
+
+    $result
 }

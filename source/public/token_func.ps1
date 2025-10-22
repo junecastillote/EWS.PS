@@ -1,3 +1,83 @@
+
+# region === Helper functions ===
+function New-EwsToken {
+    [CmdletBinding()]
+    param(
+        [string]$TenantId,
+        [string]$ClientId,
+        [string]$ClientSecret,
+        [string]$CertificateThumbprint
+    )
+
+    if ($CertificateThumbprint -and $ClientSecret) {
+        throw "Only one of -ClientSecret or -CertificateThumbprint must have a value. Don't use both."
+    }
+
+    $msalParams = @{
+        ClientId = $ClientId
+        TenantId = $TenantId
+        Scopes   = 'https://outlook.office.com/.default'
+    }
+
+    if ($CertificateThumbprint) {
+        $cert = Get-ChildItem Cert:\CurrentUser\My\$CertificateThumbprint -ErrorAction SilentlyContinue
+        if (-not $cert) {
+            $cert = Get-ChildItem Cert:\LocalMachine\My\$CertificateThumbprint -ErrorAction SilentlyContinue
+        }
+        if (-not $cert) {
+            throw "Certificate with thumbprint $CertificateThumbprint not found in CurrentUser or LocalMachine store."
+        }
+        Write-Verbose "Using certificate-based authentication"
+        $msalParams.ClientCertificate = $cert
+    }
+    elseif ($ClientSecret) {
+        Write-Verbose "Using client secret authentication"
+        $msalParams.ClientSecret = (ConvertTo-SecureString $ClientSecret -AsPlainText -Force)
+    }
+    else {
+        throw "Either -ClientSecret or -CertificateThumbprint must be specified."
+    }
+
+    try {
+        $tokenResponse = Get-MsalToken @msalParams
+        return $tokenResponse
+    }
+    catch {
+        throw "Token acquisition failed: $_"
+    }
+}
+
+
+function Read-EncryptedCache($path) {
+    try {
+        $encrypted = Get-Content $path
+        # Decrypt
+        $secure = ConvertTo-SecureString $encrypted
+        $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+        $json = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr)
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+        return ($json | ConvertFrom-Json)
+    }
+    catch {
+        Write-Verbose "Failed to decrypt cache file: $_"
+        return $null
+    }
+}
+
+function Write-EncryptedCache($path, $data) {
+    try {
+        $json = $data | ConvertTo-Json -Compress
+        # Encrypt
+        $secure = ConvertTo-SecureString $json -AsPlainText -Force
+        $encrypted = ConvertFrom-SecureString $secure
+        Set-Content -Path $path -Value $encrypted -Encoding UTF8
+    }
+    catch {
+        Write-Verbose "Failed to encrypt cache file: $_"
+    }
+}
+# endregion
+
 function Connect-Ews {
     [CmdletBinding(DefaultParameterSetName = 'CertificateThumbprint')]
     param(
@@ -25,85 +105,13 @@ function Connect-Ews {
     }
 
     # Generate cache filename based on hash of key parameters
-    $hashInput = "$TenantId|$ClientId|$Scope"
+    $hashInput = "$TenantId|$ClientId"
     $sha256 = [System.Security.Cryptography.SHA256]::Create()
     $hashBytes = $sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($hashInput))
     $hashString = [BitConverter]::ToString($hashBytes) -replace "-", ""
     $CachePath = Join-Path $CacheFolder "$hashString.json"
 
-    # region === Helper functions ===
-    function Read-EncryptedCache($path) {
-        try {
-            $encrypted = Get-Content $path
-            # Decrypt
-            $secure = ConvertTo-SecureString $encrypted
-            $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-            $json = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr)
-            [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
-            return ($json | ConvertFrom-Json)
-        }
-        catch {
-            Write-Verbose "Failed to decrypt cache file: $_"
-            return $null
-        }
-    }
 
-    function Write-EncryptedCache($path, $data) {
-        try {
-            $json = $data | ConvertTo-Json -Compress
-            # Encrypt
-            $secure = ConvertTo-SecureString $json -AsPlainText -Force
-            $encrypted = ConvertFrom-SecureString $secure
-            Set-Content -Path $path -Value $encrypted -Encoding UTF8
-        }
-        catch {
-            Write-Verbose "Failed to encrypt cache file: $_"
-        }
-    }
-
-    function Get-NewToken {
-        param(
-            [string]$TenantId,
-            [string]$ClientId,
-            [string]$ClientSecret,
-            [string]$CertificateThumbprint,
-            [string]$Scope
-        )
-
-        $msalParams = @{
-            ClientId = $ClientId
-            TenantId = $TenantId
-            Scopes   = $Scope
-        }
-
-        if ($CertificateThumbprint) {
-            $cert = Get-ChildItem Cert:\CurrentUser\My\$CertificateThumbprint -ErrorAction SilentlyContinue
-            if (-not $cert) {
-                $cert = Get-ChildItem Cert:\LocalMachine\My\$CertificateThumbprint -ErrorAction SilentlyContinue
-            }
-            if (-not $cert) {
-                throw "Certificate with thumbprint $CertificateThumbprint not found in CurrentUser or LocalMachine store."
-            }
-            Write-Verbose "Using certificate-based authentication"
-            $msalParams.ClientCertificate = $cert
-        }
-        elseif ($ClientSecret) {
-            Write-Verbose "Using client secret authentication"
-            $msalParams.ClientSecret = (ConvertTo-SecureString $ClientSecret -AsPlainText -Force)
-        }
-        else {
-            throw "Either -ClientSecret or -CertificateThumbprint must be specified."
-        }
-
-        try {
-            $tokenResponse = Get-MsalToken @msalParams
-            return $tokenResponse
-        }
-        catch {
-            throw "Token acquisition failed: $_"
-        }
-    }
-    # endregion
 
     # region === Load or acquire token ===
     $tokenResponse = $null
@@ -122,7 +130,8 @@ function Connect-Ews {
             }
             else {
                 Write-Verbose "Cached token expired or near expiration — refreshing..."
-                $tokenResponse = Get-NewToken -TenantId $TenantId -ClientId $ClientId -ClientSecret $ClientSecret -CertificateThumbprint $CertificateThumbprint -Scope $Scope
+                # $tokenResponse = Get-NewToken -TenantId $TenantId -ClientId $ClientId -ClientSecret $ClientSecret -CertificateThumbprint $CertificateThumbprint -Scope $Scope
+                $tokenResponse = New-EwsToken -TenantId $TenantId -ClientId $ClientId -ClientSecret $ClientSecret -CertificateThumbprint $CertificateThumbprint
                 $tokenData = @{
                     access_token = $tokenResponse.AccessToken
                     expires_on   = $tokenResponse.ExpiresOn
@@ -135,7 +144,8 @@ function Connect-Ews {
 
     if (-not $tokenResponse) {
         Write-Verbose "No valid cache found — requesting new token..."
-        $tokenResponse = Get-NewToken -TenantId $TenantId -ClientId $ClientId -ClientSecret $ClientSecret -CertificateThumbprint $CertificateThumbprint -Scope $Scope
+        # $tokenResponse = Get-NewToken -TenantId $TenantId -ClientId $ClientId -ClientSecret $ClientSecret -CertificateThumbprint $CertificateThumbprint -Scope $Scope
+        $tokenResponse = New-EwsToken -TenantId $TenantId -ClientId $ClientId -ClientSecret $ClientSecret -CertificateThumbprint $CertificateThumbprint
         $tokenData = @{
             access_token = $tokenResponse.AccessToken
             expires_on   = $tokenResponse.ExpiresOn
@@ -175,7 +185,6 @@ function Get-EwsAccessToken {
     }
 
     Write-Verbose "EWS session found."
-    # $expiresOn = [datetime]$Global:EwsAuthContext.ExpiresOn
     $expiresOn = $Global:EwsAuthContext.ExpiresOn
     if ($expiresOn -gt (Get-Date).AddMinutes(5)) {
         return $Global:EwsAuthContext.AccessToken
@@ -190,31 +199,30 @@ function Get-EwsAccessToken {
     }
 
     Write-Verbose "EWS token expired or near expiration — auto-refreshing..."
-    $tokenResponse = Get-MsalToken -ClientId $Global:EwsAuthContext.ClientId `
-        -TenantId $Global:EwsAuthContext.TenantId `
-        -Scopes $Global:EwsAuthContext.Scope `
-    @(
-        if ($Global:EwsAuthContext.AuthType -eq "Certificate") {
-            # @{ ClientCertificate = (Get-ChildItem Cert:\CurrentUser\My\$($Global:EwsAuthContext.CertificateThumbprint) -ErrorAction SilentlyContinue) }
-            @{ ClientCertificate = $cert }
-        }
-        else {
-            @{ ClientSecret = (ConvertTo-SecureString $Global:EwsAuthContext.ClientSecret -AsPlainText -Force) }
-        }
-    )
 
+    $tokenResponse = $tokenResponse = New-EwsToken -TenantId $Global:EwsAuthContext.TenantId -ClientId $Global:EwsAuthContext.ClientId -ClientSecret $Global:EwsAuthContext.ClientSecret -CertificateThumbprint $Global:EwsAuthContext.CertificateThumbprint
 
+    # $tokenResponse = Get-MsalToken -ClientId $Global:EwsAuthContext.ClientId `
+    #     -TenantId $Global:EwsAuthContext.TenantId `
+    #     -Scopes $Global:EwsAuthContext.Scope `
+    # @(
+    #     if ($Global:EwsAuthContext.AuthType -eq "Certificate") {
+    #         # @{ ClientCertificate = (Get-ChildItem Cert:\CurrentUser\My\$($Global:EwsAuthContext.CertificateThumbprint) -ErrorAction SilentlyContinue) }
+    #         @{ ClientCertificate = $cert }
+    #     }
+    #     else {
+    #         @{ ClientSecret = (ConvertTo-SecureString $Global:EwsAuthContext.ClientSecret -AsPlainText -Force) }
+    #     }
+    # )
 
     if ($tokenResponse -and $tokenResponse.AccessToken) {
         # Update cache + global context
         $tokenData = @{
             access_token = $tokenResponse.AccessToken
-            # expires_on   = $tokenResponse.ExpiresOn.UtcDateTime
             expires_on   = $tokenResponse.ExpiresOn
         }
         Write-EncryptedCache -path $Global:EwsAuthContext.CachePath -data $tokenData
         $Global:EwsAuthContext.AccessToken = $tokenResponse.AccessToken
-        # $Global:EwsAuthContext.ExpiresOn = $tokenResponse.ExpiresOn.UtcDateTime
         $Global:EwsAuthContext.ExpiresOn = $tokenResponse.ExpiresOn
         Write-Verbose "Token auto-refreshed successfully (expires $($tokenResponse.ExpiresOn))"
         return $tokenResponse.AccessToken
