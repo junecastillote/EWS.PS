@@ -3,3 +3,4 @@
 test.ps1
 *.csv
 demo*
+/backup
