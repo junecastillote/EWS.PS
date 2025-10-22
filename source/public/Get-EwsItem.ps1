@@ -9,25 +9,19 @@ function Get-EwsItem {
         [parameter(Mandatory, ParameterSetName = 'All')]
         [parameter(Mandatory, ParameterSetName = 'DateFilter')]
         [ValidateNotNullOrEmpty()]
-        $Folder,
+        [Microsoft.Exchange.WebServices.Data.Folder]$Folder,
 
         [parameter(Mandatory, ParameterSetName = 'DateFilter')]
         [datetime]$StartDate,
 
         [parameter(Mandatory, ParameterSetName = 'DateFilter')]
         [datetime]$EndDate
-
     )
-
-    if ($PSVersionTable.PSVersion -gt 7.2) {
-        $PSStyle.Progress.View = 'Classic'
-    }
 
     if (!($Token = Get-EwsAccessToken)) {
         Write-Error "EWS is not connected. Run the Connect-Ews command first."
         return $null
     }
-
 
     ## Create the EWS Object
     $Service = New-Object Microsoft.Exchange.WebServices.Data.ExchangeService -ArgumentList 'Exchange2013_SP1'
@@ -57,6 +51,7 @@ function Get-EwsItem {
         $endDateFilter = New-Object Microsoft.Exchange.WebServices.Data.SearchFilter+IsLessThan([Microsoft.Exchange.WebServices.Data.ItemSchema]::DateTimeReceived, $EndDate)
         $SearchFilter.Add($startDateFilter)
         $SearchFilter.Add($endDateFilter)
+        Write-Verbose "Date filter: $StartDate to $EndDate"
     }
 
     do {
