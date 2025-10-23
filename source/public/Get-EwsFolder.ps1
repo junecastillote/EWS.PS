@@ -7,11 +7,11 @@ function Get-EwsFolder {
         [ValidateNotNullOrEmpty()]
         [string]$MailboxAddress,
 
-        [parameter(Mandatory, ParameterSetName = 'Default')]
-        [parameter(Mandatory, ParameterSetName = 'byFolderName')]
-        [parameter(Mandatory, ParameterSetName = 'byFolderID')]
+        [parameter(ParameterSetName = 'Default')]
+        [parameter(ParameterSetName = 'byFolderName')]
+        [parameter(ParameterSetName = 'byFolderID')]
         [ValidateSet('Primary', 'Archive')]
-        [string]$MailboxType,
+        [string]$MailboxType = 'Primary',
 
         [parameter(Mandatory, ParameterSetName = 'byFolderName')]
         [ValidateNotNullOrEmpty()]
@@ -139,68 +139,40 @@ function Get-EwsFolder {
     ## Start timing for FindFolders
     $swFind = [System.Diagnostics.Stopwatch]::StartNew()
 
-    if ($FolderName) {
-        $SearchFilter = New-Object Microsoft.Exchange.WebServices.Data.SearchFilter+IsEqualTo(
-            [Microsoft.Exchange.WebServices.Data.FolderSchema]::DisplayName, $FolderName)
-        $MailboxFolderList = @($EWSParentFolder.FindFolders($SearchFilter, $FolderView))
-    }
-    elseif ($FolderID) {
-        try {
-            $ewsFolderId = New-Object Microsoft.Exchange.WebServices.Data.FolderId($FolderID)
-            $MailboxFolderList = @([Microsoft.Exchange.WebServices.Data.Folder]::Bind($Service, $ewsFolderId))
-        }
-        catch { Write-Error $_.Exception.Message }
-    }
-    else {
-        $MailboxFolderList = @($EWSParentFolder.FindFolders($FolderView))
-    }
+    $MailboxFolderList = @($EWSParentFolder.FindFolders($FolderView))
 
     $swFind.Stop()
     Write-Verbose ("FindFolders completed in {0:N2} seconds" -f $swFind.Elapsed.TotalSeconds)
 
     if ($MailboxFolderList.Count -lt 1) {
-        if ($PSCmdlet.ParameterSetName -eq 'byFolderName') {
-            Write-Warning "No mailbox folder matching the name [$($FolderName)] was found in mailbox: [$($MailboxAddress) ($($MailboxType))]"
-            return $null
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq 'byFolderID') {
-            Write-Warning "No mailbox folder matching the ID [$($FolderID)] was found in mailbox: [$($MailboxAddress) ($($MailboxType))]"
-            return $null
-        }
+        return $null
     }
 
     ## Path computation timing
     $swPath = [System.Diagnostics.Stopwatch]::StartNew()
 
-    if (-not $FolderName -and -not $FolderID) {
-        $FolderCache[$EWSParentFolder.Id.UniqueId] = @{
-            DisplayName = $EWSParentFolder.DisplayName
-            ParentId    = $null
-            Path        = $EWSParentFolder.DisplayName
-        }
 
-        foreach ($f in $MailboxFolderList) {
-            $FolderCache[$f.Id.UniqueId] = @{
-                DisplayName = $f.DisplayName
-                ParentId    = if ($f.ParentFolderId) { $f.ParentFolderId.UniqueId } else { $null }
-                Path        = $null
-            }
-        }
+    $FolderCache[$EWSParentFolder.Id.UniqueId] = @{
+        DisplayName = $EWSParentFolder.DisplayName
+        ParentId    = $null
+        Path        = $EWSParentFolder.DisplayName
+    }
 
-        Resolve-AllFolderPaths
-
-        foreach ($folder in $MailboxFolderList) {
-            if ($FolderCache.ContainsKey($folder.Id.UniqueId)) {
-                $folder | Add-Member -NotePropertyName 'Path' -NotePropertyValue $FolderCache[$folder.Id.UniqueId].Path -Force
-            }
-            else {
-                $p = Get-FolderPath_Recursive -Folder $folder
-                $folder | Add-Member -NotePropertyName 'Path' -NotePropertyValue $p -Force
-            }
+    foreach ($f in $MailboxFolderList) {
+        $FolderCache[$f.Id.UniqueId] = @{
+            DisplayName = $f.DisplayName
+            ParentId    = if ($f.ParentFolderId) { $f.ParentFolderId.UniqueId } else { $null }
+            Path        = $null
         }
     }
-    else {
-        foreach ($folder in $MailboxFolderList) {
+
+    Resolve-AllFolderPaths
+
+    foreach ($folder in $MailboxFolderList) {
+        if ($FolderCache.ContainsKey($folder.Id.UniqueId)) {
+            $folder | Add-Member -NotePropertyName 'Path' -NotePropertyValue $FolderCache[$folder.Id.UniqueId].Path -Force
+        }
+        else {
             $p = Get-FolderPath_Recursive -Folder $folder
             $folder | Add-Member -NotePropertyName 'Path' -NotePropertyValue $p -Force
         }
@@ -210,5 +182,16 @@ function Get-EwsFolder {
     Write-Verbose ("Path computation completed in {0:N2} seconds" -f $swPath.Elapsed.TotalSeconds)
     Write-Verbose "Retrieved $($MailboxFolderList.Count) folders."
 
-    return $MailboxFolderList
+    $MailboxFolderList | Add-Member -MemberType NoteProperty -Name MailboxAddress -Value $MailboxAddress
+    $MailboxFolderList | Add-Member -MemberType NoteProperty -Name MailboxType -Value $MailboxType
+
+    if ($PSCmdlet.ParameterSetName -eq 'byFolderName') {
+        $MailboxFolderList | Where-Object { $_.DisplayName -eq $FolderName }
+    }
+    elseif ($PSCmdlet.ParameterSetName -eq 'byFolderId') {
+        $MailboxFolderList | Where-Object { $_.Id.UniqueId -eq $FolderID }
+    }
+    else {
+        $MailboxFolderList
+    }
 }

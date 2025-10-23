@@ -69,5 +69,7 @@ function Get-EwsItem {
         $ItemView.offset += $FindItemResults.Items.Count
     } while ($FindItemResults.MoreAvailable -eq $true)
 
+    $result | Add-Member -MemberType NoteProperty -Name Path -Value $Folder.Path
+    $result | Add-Member -MemberType NoteProperty -Name Folder -Value $Folder.DisplayName
     $result
 }
