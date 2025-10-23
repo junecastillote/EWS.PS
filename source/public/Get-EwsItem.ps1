@@ -1,10 +1,10 @@
 function Get-EwsItem {
     [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
-        [parameter(Mandatory, ParameterSetName = 'All')]
-        [parameter(Mandatory, ParameterSetName = 'DateFilter')]
-        [ValidateNotNullOrEmpty()]
-        [string]$MailboxAddress,
+        # [parameter(Mandatory, ParameterSetName = 'All')]
+        # [parameter(Mandatory, ParameterSetName = 'DateFilter')]
+        # [ValidateNotNullOrEmpty()]
+        # [string]$MailboxAddress,
 
         [parameter(Mandatory, ParameterSetName = 'All')]
         [parameter(Mandatory, ParameterSetName = 'DateFilter')]
@@ -17,6 +17,8 @@ function Get-EwsItem {
         [parameter(Mandatory, ParameterSetName = 'DateFilter')]
         [datetime]$EndDate
     )
+
+    $MailboxAddress = $Folder.MailboxAddress
 
     if (!($Token = Get-EwsAccessToken)) {
         Write-Error "EWS is not connected. Run the Connect-Ews command first."
