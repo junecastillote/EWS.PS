@@ -102,7 +102,7 @@ function Copy-EwsMailboxMessage {
 
         if ($TestMode -eq $true) {
             $outputObject.Result = 'Simulated'
-            # "$($prefix)Copying message: [$($Item.MailboxType)|$($Item.MailboxAddress):$($Item.Path.Replace('Top of Information Store',''))\$($Item.InternetMessageId)] to folder [$($TargetFolder.MailboxType)|$($TargetFolder.MailboxAddress):$($TargetFolder.Path.Replace('Top of Information Store',''))]" | Out-Default
+            $outputObject.Note = ''
         }
         elseif ($TestMode -eq $false) {
             try {
