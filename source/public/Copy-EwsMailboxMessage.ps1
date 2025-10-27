@@ -13,7 +13,11 @@ function Copy-EwsMailboxMessage {
         [bool]$TestMode = $true,
 
         [parameter()]
-        [bool]$Deduplicate = $true
+        [bool]$Deduplicate = $true,
+
+        [Parameter()]
+        [bool]
+        $Move = $false
     )
 
     if (@($TargetFolder).Count -gt 1) {
@@ -53,7 +57,12 @@ function Copy-EwsMailboxMessage {
     $totalItems = $MessageItem.Count
 
     ## === Get target folder items InternetMessageId and cache it. ===
-    $targetCache = Get-EwsMessageIdCache -Service $Service -TargetFolder $TargetFolder
+    $targetCache = New-Object 'System.Collections.Generic.HashSet[string]'
+    Get-EwsMessageIdCache -Folder $TargetFolder | ForEach-Object {
+        if ($_.InternetMessageId) {
+            $null = $targetCache.Add($_.InternetMessageId)
+        }
+    }
 
     $i = 1
 
@@ -92,13 +101,20 @@ function Copy-EwsMailboxMessage {
         }
 
         if ($TestMode -eq $true) {
-            "$($prefix)Copying message: [$($Item.MailboxType)|$($Item.MailboxAddress):$($Item.Path.Replace('Top of Information Store',''))\$($Item.InternetMessageId)] to folder [$($TargetFolder.MailboxType)|$($TargetFolder.MailboxAddress):$($TargetFolder.Path.Replace('Top of Information Store',''))]" | Out-Default
+            $outputObject.Result = 'Simulated'
+            # "$($prefix)Copying message: [$($Item.MailboxType)|$($Item.MailboxAddress):$($Item.Path.Replace('Top of Information Store',''))\$($Item.InternetMessageId)] to folder [$($TargetFolder.MailboxType)|$($TargetFolder.MailboxAddress):$($TargetFolder.Path.Replace('Top of Information Store',''))]" | Out-Default
         }
         elseif ($TestMode -eq $false) {
             try {
                 $Message = [Microsoft.Exchange.WebServices.Data.EmailMessage]::Bind($service, $Item.Id)
-                $Message.Copy($TargetFolder.Id) > $null
-                $outputObject.Result = 'Copied'
+                if ($Move) {
+                    $Message.Move($TargetFolder.Id) > $null
+                    $outputObject.Result = 'Moved'
+                }
+                else {
+                    $Message.Copy($TargetFolder.Id) > $null
+                    $outputObject.Result = 'Copied'
+                }
                 $outputObject.Note = ''
             }
             catch {

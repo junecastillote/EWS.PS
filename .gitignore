@@ -2,5 +2,5 @@
 *.pfx
 test.ps1
 *.csv
-demo*
+# demo*
 /backup
