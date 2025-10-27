@@ -200,7 +200,7 @@ function Get-EwsAccessToken {
 
     Write-Verbose "EWS token expired or near expiration — auto-refreshing..."
 
-    $tokenResponse = $tokenResponse = New-EwsToken -TenantId $Global:EwsAuthContext.TenantId -ClientId $Global:EwsAuthContext.ClientId -ClientSecret $Global:EwsAuthContext.ClientSecret -CertificateThumbprint $Global:EwsAuthContext.CertificateThumbprint
+    $tokenResponse = New-EwsToken -TenantId $Global:EwsAuthContext.TenantId -ClientId $Global:EwsAuthContext.ClientId -ClientSecret $Global:EwsAuthContext.ClientSecret -CertificateThumbprint $Global:EwsAuthContext.CertificateThumbprint
 
     # $tokenResponse = Get-MsalToken -ClientId $Global:EwsAuthContext.ClientId `
     #     -TenantId $Global:EwsAuthContext.TenantId `

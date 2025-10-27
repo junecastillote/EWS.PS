@@ -6,3 +6,7 @@ Import-Module -Name $EwsDLL -ErrorAction Stop -Force
 Get-ChildItem "$($PSScriptRoot)\source\*.ps1" -Recurse -File | ForEach-Object {
     . "$($_.FullName)"
 }
+
+if ($PSVersionTable.PSVersion -gt 7.2) {
+    $PSStyle.Progress.View = 'Classic'
+}

@@ -1,26 +1,34 @@
-function Get-EwsFolder {
-    [CmdletBinding(DefaultParameterSetName = 'Default')]
+function Get-EwsMailboxFolder {
+    [CmdletBinding()]
     param (
-        [parameter(Mandatory, ParameterSetName = 'Default')]
-        [parameter(Mandatory, ParameterSetName = 'byFolderName')]
-        [parameter(Mandatory, ParameterSetName = 'byFolderID')]
+        [parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]$MailboxAddress,
 
-        [parameter(ParameterSetName = 'Default')]
-        [parameter(ParameterSetName = 'byFolderName')]
-        [parameter(ParameterSetName = 'byFolderID')]
+        [parameter(Mandatory)]
         [ValidateSet('Primary', 'Archive')]
-        [string]$MailboxType = 'Primary',
+        [string]$MailboxType,
 
-        [parameter(Mandatory, ParameterSetName = 'byFolderName')]
-        [ValidateNotNullOrEmpty()]
-        [string]$FolderName,
+        [parameter()]
+        [ValidateSet(
+            'Email',
+            'Calendar',
+            'Contacts',
+            'Tasks'
+        )]
+        [string[]]$FolderClass,
 
-        [parameter(Mandatory, ParameterSetName = 'byFolderID')]
-        [ValidateNotNullOrEmpty()]
-        [string]$FolderID
+        [Parameter()]
+        [switch]
+        $NonEmptyFolderOnly
     )
+
+    $folderClassTable = @{
+        Email    = 'IPF.Note'
+        Calendar = 'IPF.Appointment'
+        Contacts = 'IPF.Contact'
+        Tasks    = 'IPF.Task'
+    }
 
     ## Helper: for -FolderName/-FolderID mode (cached recursive bind)
     function Get-FolderPath_Recursive {
@@ -127,7 +135,13 @@ function Get-EwsFolder {
     }
 
     ## Bind the mailbox root
-    $EWSParentFolder = [Microsoft.Exchange.WebServices.Data.Folder]::Bind($Service, $ConnectToMailboxRootFolders)
+    try {
+        $EWSParentFolder = [Microsoft.Exchange.WebServices.Data.Folder]::Bind($Service, $ConnectToMailboxRootFolders)
+    }
+    catch {
+        Write-Error $_.Exception.Message
+        return $null
+    }
 
     ## Create FolderView
     $FolderView = New-Object Microsoft.Exchange.WebServices.Data.FolderView(1000)
@@ -150,7 +164,6 @@ function Get-EwsFolder {
 
     ## Path computation timing
     $swPath = [System.Diagnostics.Stopwatch]::StartNew()
-
 
     $FolderCache[$EWSParentFolder.Id.UniqueId] = @{
         DisplayName = $EWSParentFolder.DisplayName
@@ -185,13 +198,19 @@ function Get-EwsFolder {
     $MailboxFolderList | Add-Member -MemberType NoteProperty -Name MailboxAddress -Value $MailboxAddress
     $MailboxFolderList | Add-Member -MemberType NoteProperty -Name MailboxType -Value $MailboxType
 
-    if ($PSCmdlet.ParameterSetName -eq 'byFolderName') {
-        $MailboxFolderList | Where-Object { $_.DisplayName -eq $FolderName }
+    if ($FolderClass) {
+        $folderFilter = @()
+        foreach ($class in $FolderClass) {
+            $folderFilter += $folderClassTable[$class]
+        }
+        Write-Verbose "Filtering result by FolderClass [$($FolderClass -join ", ")]"
+        $MailboxFolderList = $MailboxFolderList | Where-Object { $folderFilter -contains $_.FolderClass }
     }
-    elseif ($PSCmdlet.ParameterSetName -eq 'byFolderId') {
-        $MailboxFolderList | Where-Object { $_.Id.UniqueId -eq $FolderID }
+
+    if ($NonEmptyFolderOnly) {
+        Write-Verbose "Filtering non-empty folders only."
+        $MailboxFolderList = $MailboxFolderList | Where-Object { $_.TotalCount -gt 0 }
     }
-    else {
-        $MailboxFolderList
-    }
+
+    $MailboxFolderList #| Select-Object Path, MailboxAddress, MailboxType, Id, ParentFolderId, ChildFolderCount, DisplayName, FolderClass, TotalCount
 }
